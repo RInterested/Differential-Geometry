@@ -1,6 +1,5 @@
-
-    x = linspace(-1.5,1.5);
-    y = linspace(-1.5,1.5);
+    x = linspace(-1,1);
+    y = linspace(-1,1);
     [x,y] = meshgrid(x,y);
     z = 0.5 *y.*sin(5 * x) - 0.5 * x.*cos(5 * y)+1.5; 
     S = [x;y;z];
@@ -8,6 +7,7 @@
     zlim([0 8])
     set(h,'edgecolor','none')
     colormap('gray');
+    axis off
     hold on
     
     f = @(x,y) 0.5 *y.* sin(5 * x) - 0.5 * x.*cos(5 * y)+1.5;     % The actual surface
@@ -17,18 +17,19 @@
     
     N = @(x,y) [- dfdx(x,y), - dfdy(x,y), 1]; % Normal vec to surface @ any pt.
     
-     C = {'b','w','r','g','y','m','c',[0.75, 0.75, 0],[0.9290, 0.6940, 0.1250],[0.3010 0.7450 0.9330],[0.1290 0.6940 0.1250],[0.8500 0.3250 0.0980]}; % Color scheme
+     C = {'w',[0.8500, 0.3250, 0.0980],[0.9290, 0.6940, 0.1250],'g','y','k','c',[0.75, 0.75, 0],'r',...
+         [0.3010 0.7450 0.9330],'m',[0.8500 0.3250 0.0980]}; % Color scheme
     
-    for s = 1:11     % No. of lines to be plotted.
-    start = -10:2:10;    % Distributing the starting points of the lines.  
-    x0 = -start(s)/1000; % Fitting the starting pts between -1 and 1 along y axis.
+    for s = 1:11     % No. of lines to be plotted.  
+    start = [0, 0.9794, -0.9794, 0.7835,  -0.7835, 0.5877, -0.5877, 0.3918, -0.3918, 0.1959, -0.1959];
+    x0 = start(s);
     y0 = -1;          % Along x axis always starts at 1.
     dx0 = 0;         % Initial differential increment along x
     dy0 = 0.05;      % Initial differential increment along y
     step_size = 0.00005; % Will determine the progression rate from pt to pt.
     eta =  step_size / sqrt(dx0^2 + dy0^2); % Normalization.
     eps = 0.0001;          % Epsilon
-    max_num_iter = 1000000; % Number of dots in each line.
+    max_num_iter = 100000; % Number of dots in each line.
     
     x = [[x0, x0 + eta * dx0], zeros(1,max_num_iter - 2)]; % Vec of x values
     y = [[y0, y0 + eta * dy0], zeros(1,max_num_iter - 2)]; % Vec of y values
@@ -57,13 +58,23 @@
                 y(i + 1) = ytp1;
     end
     
-    P = [x; y; f(x,y)]; % Compiling results into a matrix.
+     P = [x; y; f(x,y)]; % Compiling results into a matrix.
     
-    indices = find(abs(P(1,:)) < 1.5); % Avoiding lines overshooting surface.
+    indices = find(abs(P(1,:)) < 1); % Avoiding lines overshooting surface.
     P = P(:,indices);
-    indices = find(abs(P(2,:)) < 1.5);
+    indices = find(abs(P(2,:)) < 1);
     P = P(:,indices);
     
-    plot3(P(1,:), P(2,:), P(3,:), '.', 'MarkerSize', 5,'color',C{s})
-    
+    units = 15; % Deternines speed (smaller, faster)
+    packet = floor(size(P,2)/units);
+    P = P(:,1: packet * units);
+
+  for k = 1:packet:(packet * units)
+        hold on
+
+        plot3(P(1, k:(k+packet-1)), P(2,(k:(k+packet-1))), P(3,(k:(k+packet-1))),...
+            '.', 'MarkerSize', 4,'color',C{s})
+        drawnow
+  end
+      
     end
