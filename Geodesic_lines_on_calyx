@@ -63,11 +63,13 @@
     P = P(:,indices);
     units = 35; % Deternines speed (smaller, faster)
     packet = floor(size(P,2)/units);
+    P = P(:,1: packet * units);
+
 
   for k = 1:packet:(packet * units)
         hold on
         
-        plot3(P(1, k:(k+packet)), P(2,(k:(k+packet))), P(3,(k:(k+packet))), '.', 'MarkerSize', 5,'color',C{s})
+        plot3(P(1, k:(k+packet-1)), P(2,(k:(k+packet-1))), P(3,(k:(k+packet-1))), '.', 'MarkerSize', 5,'color',C{s})
         drawnow
   end
     
