@@ -28,7 +28,6 @@
     dy0 = 0.05;      % Initial differential increment along y
     step_size = 0.00005; % Will determine the progression rate from pt to pt.
     eta =  step_size / sqrt(dx0^2 + dy0^2); % Normalization.
-    eps = 0.0001;          % Epsilon
     max_num_iter = 100000; % Number of dots in each line.
     
     x = [[x0, x0 + eta * dx0], zeros(1,max_num_iter - 2)]; % Vec of x values
