@@ -72,7 +72,7 @@
     
                 dn = sqrt(dx.^2 + dy.^2);
                 df = dfdx(xt, yt).* dx/dn + dfdy(xt, yt).*dy/dn;
-                dfn = 1/sqrt(1 + df^2);
+                dfn = 1/sqrt(1 + df^2); % Normalization by arc length
    
                 if mod(i , 2) == 1
                     pm = 1;
