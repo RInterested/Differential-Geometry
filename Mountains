@@ -27,7 +27,7 @@
     y0 = -0.1;          % Along x axis always starts at 1.
     dx0 = 0.001*(cos(s));         % Initial differential increment along x
     dy0 = 0.001*(sin(s));         % Initial differential increment along y
-    step_size = 0.00005; % Will determine the progression rate from pt to pt.
+    step_size = 0.00005; % Will determine the progression rate from pt to pt. Making it smaller increases the length of the curve.
     eta =  step_size / sqrt(dx0^2 + dy0^2); % Normalization.
     eps = 0.0001;          % Epsilon
     max_num_iter = 1400000; % Number of dots in each line.
