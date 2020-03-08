@@ -1,0 +1,106 @@
+% Really fudged math - unreliable plot.
+
+aminor = 1.; % Torus minor radius
+Rmajor = 3.; % Torus major radius
+
+theta  = linspace(0, 2 * pi, 64)   ; % Poloidal angle
+phi    = linspace(0, 2 * pi, 64) ; % Toroidal angle
+
+[p, t] = meshgrid(phi, theta);
+
+x = (Rmajor + aminor.*cos(t)) .* cos(p);
+y = (Rmajor + aminor.*cos(t)) .* sin(p);
+z = aminor.*sin(t);
+
+h = surf(x,y,z);
+axis equal;
+axis off;
+set(h,'edgecolor','none')
+colormap('gray');
+    
+    xconv = @(p,t) (Rmajor + aminor.*cos(t)) .* cos(p);
+    yconv = @(p,t) (Rmajor + aminor.*cos(t)) .* sin(p);
+    f = @(t) aminor.*sin(t); 
+    
+    
+    dfdx = @(t) (f(t + eps) - f(t - eps))/(2 * eps); % ~ partial f wrt x
+    dfdy = dfdx;
+    
+    N = @(p,t) [- dfdx(t), - dfdy(t), 1]; % Normal vec to surface @ any pt.
+    
+     C = {'c',[0.75, 0.75, 0],[0.9290, 0.6940, 0.1250],[0.3010 0.7450 0.9330],[0.1290 0.6940 0.1250],[0.8500 0.3250 0.0980]}; % Color scheme
+
+    
+    for s = 1    % No. of lines to be plotted.
+    p0 = pi;
+    t0 = 0;
+    x0 = xconv(p0,t0);
+    y0 = yconv(p0,t0);
+    dp0 = 0.05;      % Initial differential increment along p
+    dt0 = -0.5;      % Initial differential increment along t
+    dx0 = xconv(dp0,dt0);
+    dy0 = yconv(dp0,dt0);
+    step_size = 0.00001; % Will determine the progression rate from pt to pt.
+    % Making it smaller increases the length of the curve.
+    eta =  step_size / sqrt(dx0^2 + dy0^2); % Normalization.
+    eps = 0.0001;          % Epsilon
+    max_num_iter = 10000000; % Number of dots in each line.
+    
+    p = [[p0, p0 + eta * dx0], zeros(1,max_num_iter - 2)]; % Vec of p values
+    t = [[t0, t0 + eta * dy0], zeros(1,max_num_iter - 2)]; % Vec of t values
+    x = [[x0, x0 + eta * dx0], zeros(1,max_num_iter - 2)]; % Vec of x values
+    y = [[y0, y0 + eta * dy0], zeros(1,max_num_iter - 2)]; % Vec of y values
+    
+    for i = 2:(max_num_iter - 1)  % Creating the geodesic:
+                pt = p(i);        % Values at point t of x, y and the function:
+                tt = t(i);
+                ft = f(tt);
+                xt = x(i);        % Values at point t of x, y and the function:
+                yt = y(i);
+                
+                ptm1 = p(i - 1);  % Values at t minus 1 (prior point) for x,y,f
+                ttm1 = t(i - 1);
+                ftm1 = f(ttm1);
+                xtm1 = x(i - 1);  % Values at t minus 1 (prior point) for x,y,f
+                ytm1 = y(i - 1);
+                
+                psymp = pt +  (pt - ptm1);
+                tsymp = tt +  (tt - ttm1);
+                xsymp = xconv(pt,tt) + (xconv(pt,tt) - xconv(ptm1,ttm1)); % Adding the prior difference forward:
+                ysymp = yconv(pt,tt) + (yconv(pt,tt) - yconv(ptm1,ttm1));
+                fsymp = ft + (ft - ftm1);
+                
+                df = fsymp - f(tsymp); % Is the surface changing? How much?
+                n = N(pt,tt);                % Normal vector at point t
+                gamma = df * n(3);           % Scalar x change f x z value of N
+                
+                xtp1 = xsymp - gamma * n(1); % Gamma to modulate incre. x & y.
+                ytp1 = ysymp - gamma * n(2);
+                ptp1 = psymp - gamma * n(1);
+                ttp1 = tsymp - gamma * n(2);
+                
+                x(i + 1) = xtp1;
+                y(i + 1) = ytp1;
+                p(i + 1) = ptp1;
+                t(i + 1) = ttp1;
+                
+    end
+    
+    Par = [p; t; f(t)];
+    P = [x; y; f(t)]; % Compiling results into a matrix.
+    
+    indices = find(abs(P(1,:)) < 5); % Avoiding lines overshooting surface.
+    P = P(:,indices);
+    indices = find(abs(P(2,:)) < 5);
+    P = P(:,indices);
+    units = 45; % Deternines speed (smaller, faster)
+    packet = floor(size(P,2)/units);
+    P = P(:,1: packet * units);
+    
+  for k = 1:packet:(packet * units)
+        hold on
+        plot3(P(1, k:(k+packet-1)), P(2,(k:(k+packet-1))), P(3,(k:(k+packet-1))), '.', 'MarkerSize', 5,'color',C{s})
+        drawnow
+  end
+      
+  end
