@@ -1,12 +1,10 @@
-% Really fudged math - unreliable plot.
-
-aminor = 1.; % Torus minor radius
-Rmajor = 3.; % Torus major radius
+aminor = 1; % Torus minor radius
+Rmajor = 2; % Torus major radius
 
 theta  = linspace(0, 2 * pi, 64)   ; % Poloidal angle
-phi    = linspace(0, 2 * pi, 64) ; % Toroidal angle
+phi    = linspace(0, 2 * pi, 64) ;   % Toroidal angle
 
-[p, t] = meshgrid(phi, theta);
+[t, p] = meshgrid(phi, theta);
 
 x = (Rmajor + aminor.*cos(t)) .* cos(p);
 y = (Rmajor + aminor.*cos(t)) .* sin(p);
@@ -32,19 +30,19 @@ colormap('gray');
 
     
     for s = 1    % No. of lines to be plotted.
-    p0 = pi;
+    p0 = 0;
     t0 = 0;
     x0 = xconv(p0,t0);
     y0 = yconv(p0,t0);
-    dp0 = 0.05;      % Initial differential increment along p
-    dt0 = -0.5;      % Initial differential increment along t
+    dp0 = 2;      % Initial differential increment along p
+    dt0 = 0;      % Initial differential increment along t
     dx0 = xconv(dp0,dt0);
     dy0 = yconv(dp0,dt0);
     step_size = 0.00001; % Will determine the progression rate from pt to pt.
     % Making it smaller increases the length of the curve.
     eta =  step_size / sqrt(dx0^2 + dy0^2); % Normalization.
     eps = 0.0001;          % Epsilon
-    max_num_iter = 10000000; % Number of dots in each line.
+    max_num_iter = 8000000; % Number of dots in each line.
     
     p = [[p0, p0 + eta * dx0], zeros(1,max_num_iter - 2)]; % Vec of p values
     t = [[t0, t0 + eta * dy0], zeros(1,max_num_iter - 2)]; % Vec of t values
@@ -72,12 +70,14 @@ colormap('gray');
                 
                 df = fsymp - f(tsymp); % Is the surface changing? How much?
                 n = N(pt,tt);                % Normal vector at point t
+                ntm1 = N(ptm1,ttm1);  
+                diffN = n - ntm1;
                 gamma = df * n(3);           % Scalar x change f x z value of N
                 
                 xtp1 = xsymp - gamma * n(1); % Gamma to modulate incre. x & y.
                 ytp1 = ysymp - gamma * n(2);
-                ptp1 = psymp - gamma * n(1);
-                ttp1 = tsymp - gamma * n(2);
+                ptp1 = psymp - gamma * diffN(1);
+                ttp1 = tsymp - gamma * diffN(2);
                 
                 x(i + 1) = xtp1;
                 y(i + 1) = ytp1;
@@ -93,7 +93,7 @@ colormap('gray');
     P = P(:,indices);
     indices = find(abs(P(2,:)) < 5);
     P = P(:,indices);
-    units = 45; % Deternines speed (smaller, faster)
+    units = 45; % Determines speed (smaller, faster)
     packet = floor(size(P,2)/units);
     P = P(:,1: packet * units);
     
